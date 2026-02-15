@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
+const { hashPassword, comparePassword } = require('../utils/encryption');
 
 const userSchema = mongoose.Schema(
     {
@@ -18,9 +18,31 @@ const userSchema = mongoose.Schema(
         },
         role: {
             type: String,
-            enum: ['admin', 'manager', 'receptionist', 'housekeeping', 'guest'],
+            enum: ['admin', 'manager', 'receptionist', 'housekeeping', 'maintenance', 'guest'],
             default: 'guest',
         },
+        status: {
+            type: String,
+            enum: ['active', 'inactive', 'suspended'],
+            default: 'active',
+        },
+        phone: {
+            type: String,
+        },
+        address: {
+            type: String,
+        },
+        preferences: {
+            type: String,
+        },
+        createdBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+        },
+        updatedBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+        }
     },
     {
         timestamps: true,
@@ -29,17 +51,21 @@ const userSchema = mongoose.Schema(
 
 // Method to match password
 userSchema.methods.matchPassword = async function (enteredPassword) {
-    return await bcrypt.compare(enteredPassword, this.password);
+    return await comparePassword(enteredPassword, this.password);
 };
 
 // Middleware to hash password before saving
 userSchema.pre('save', async function (next) {
     if (!this.isModified('password')) {
-        next();
+        return next();
     }
 
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
+    try {
+        this.password = await hashPassword(this.password);
+        next();
+    } catch (error) {
+        next(error);
+    }
 });
 
 const User = mongoose.model('User', userSchema);

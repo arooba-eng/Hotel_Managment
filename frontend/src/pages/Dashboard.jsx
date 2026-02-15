@@ -1,5 +1,6 @@
 import { Box, Container, Typography, Grid, Paper, Stack, Tab, Tabs, TextField, Button, Avatar, Chip, List, ListItem, ListItemText, ListItemIcon } from '@mui/material';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import PersonIcon from '@mui/icons-material/Person';
 import HistoryIcon from '@mui/icons-material/History';
 import RoomServiceIcon from '@mui/icons-material/RoomService';
@@ -10,10 +11,23 @@ import KingBedIcon from '@mui/icons-material/KingBed';
 
 const UserDashboard = () => {
     const [tabValue, setTabValue] = useState(0);
+    const [userInfo, setUserInfo] = useState(null);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const storedUser = localStorage.getItem('userInfo');
+        if (!storedUser) {
+            navigate('/login');
+        } else {
+            setUserInfo(JSON.parse(storedUser));
+        }
+    }, [navigate]);
 
     const handleTabChange = (event, newValue) => {
         setTabValue(newValue);
     };
+
+    if (!userInfo) return null;
 
     return (
         <Box sx={{ py: 10, bgcolor: 'background.default', minHeight: '100vh' }}>
@@ -25,11 +39,11 @@ const UserDashboard = () => {
                             <Avatar
                                 sx={{ width: 100, height: 100, mx: 'auto', mb: 2, bgcolor: 'primary.main', fontSize: '2rem' }}
                             >
-                                AS
+                                {userInfo.name.split(' ').map(n => n[0]).join('')}
                             </Avatar>
-                            <Typography variant="h5" sx={{ fontWeight: 800 }}>Arooba Shah</Typography>
-                            <Typography color="text.secondary" sx={{ mb: 2 }}>Loyalty Member Since 2024</Typography>
-                            <Chip label="Gold Member" color="secondary" size="small" sx={{ fontWeight: 700 }} />
+                            <Typography variant="h5" sx={{ fontWeight: 800 }}>{userInfo.name}</Typography>
+                            <Typography color="text.secondary" sx={{ mb: 2 }}>{userInfo.role.toUpperCase()} Member Since 2025</Typography>
+                            <Chip label={userInfo.role === 'admin' ? 'Administrator' : 'Gold Member'} color="secondary" size="small" sx={{ fontWeight: 700 }} />
 
                             <Box sx={{ mt: 4, textAlign: 'left' }}>
                                 <Tabs
@@ -60,10 +74,10 @@ const UserDashboard = () => {
                                     <Typography variant="h4" sx={{ fontWeight: 800, mb: 4 }}>Guest Profile</Typography>
                                     <Grid container spacing={3}>
                                         <Grid item xs={12} sm={6}>
-                                            <TextField fullWidth label="Full Name" defaultValue="Arooba Shah" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
+                                            <TextField fullWidth label="Full Name" defaultValue={userInfo.name} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
                                         </Grid>
                                         <Grid item xs={12} sm={6}>
-                                            <TextField fullWidth label="Email Address" defaultValue="arooba@example.com" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
+                                            <TextField fullWidth label="Email Address" defaultValue={userInfo.email} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
                                         </Grid>
                                         <Grid item xs={12}>
                                             <TextField fullWidth label="Special Preferences" placeholder="e.g. Extra pillows, high floor, vegan meals" multiline rows={3} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
