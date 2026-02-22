@@ -29,6 +29,9 @@ app.use('/api/rooms', require('./routes/roomRoutes'));
 app.use('/api/bookings', require('./routes/bookingRoutes'));
 app.use('/api/housekeeping', require('./routes/housekeepingRoutes'));
 app.use('/api/maintenance', require('./routes/maintenanceRoutes'));
+app.use('/api/services', require('./routes/serviceRoutes'));
+app.use('/api/invoices', require('./routes/invoiceRoutes'));
+app.use('/api/feedback', require('./routes/feedbackRoutes'));
 
 app.get('/', (req, res) => {
     res.send('API is running...');

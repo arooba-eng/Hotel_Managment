@@ -38,7 +38,10 @@ const createTask = async (req, res) => {
         // If a task is created, we might want to ensure room is in 'cleaning' status
         await Room.findByIdAndUpdate(roomId, { status: 'cleaning' });
 
-        res.status(201).json(task);
+        res.status(201).json({
+            message: 'Housekeeping task assigned successfully',
+            task
+        });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -62,7 +65,10 @@ const updateTaskStatus = async (req, res) => {
             }
 
             const updatedTask = await task.save();
-            res.json(updatedTask);
+            res.json({
+                message: `Task status updated to ${status}`,
+                task: updatedTask
+            });
         } else {
             res.status(404).json({ message: 'Task not found' });
         }

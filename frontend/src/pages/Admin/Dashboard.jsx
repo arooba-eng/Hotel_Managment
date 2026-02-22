@@ -90,15 +90,46 @@ const AdminDashboard = () => {
                 ))}
 
                 <Grid item xs={12} md={8}>
-                    <Paper sx={{ p: 4, height: 400, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', bgcolor: 'rgba(197, 160, 89, 0.02)' }}>
-                        <TrendingUpIcon sx={{ fontSize: 64, color: 'secondary.main', mb: 2, opacity: 0.2 }} />
-                        <Typography variant="h6" color="text.secondary">Revenue Analytics Placeholder</Typography>
-                        <Typography variant="caption" color="text.secondary">Interactive charts will be loaded here</Typography>
+                    <Paper sx={{ p: 3, border: '1px solid #e0e0e0', borderRadius: 3, minHeight: 400 }}>
+                        <Typography variant="h6" sx={{ fontWeight: 800, mb: 3 }}>Recent Bookings</Typography>
+                        <Stack spacing={2}>
+                            {statsData?.recentBookings?.map((booking, i) => (
+                                <Box key={booking._id}>
+                                    <Stack direction="row" justifyContent="space-between" alignItems="center">
+                                        <Stack direction="row" spacing={2} alignItems="center">
+                                            <Avatar sx={{ bgcolor: 'secondary.light', color: 'secondary.main', width: 40, height: 40, fontSize: '1rem' }}>
+                                                {booking.guest?.name[0]}
+                                            </Avatar>
+                                            <Box>
+                                                <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{booking.guest?.name}</Typography>
+                                                <Typography variant="caption" color="text.secondary">Room {booking.room?.roomNumber} • {booking.room?.roomType}</Typography>
+                                            </Box>
+                                        </Stack>
+                                        <Box sx={{ textAlign: 'right' }}>
+                                            <Typography variant="subtitle2" sx={{ fontWeight: 800, color: 'primary.main' }}>
+                                                ${booking.totalAmount}
+                                            </Typography>
+                                            <Chip
+                                                label={booking.status.toUpperCase()}
+                                                size="small"
+                                                sx={{ height: 18, fontSize: '0.6rem', fontWeight: 700, mt: 0.5 }}
+                                            />
+                                        </Box>
+                                    </Stack>
+                                    {i < statsData.recentBookings.length - 1 && <Divider sx={{ mt: 2 }} />}
+                                </Box>
+                            ))}
+                            {(!statsData?.recentBookings || statsData.recentBookings.length === 0) && (
+                                <Box sx={{ textAlign: 'center', py: 5 }}>
+                                    <Typography color="text.secondary">No recent bookings found.</Typography>
+                                </Box>
+                            )}
+                        </Stack>
                     </Paper>
                 </Grid>
 
                 <Grid item xs={12} md={4}>
-                    <Paper sx={{ p: 4, height: 400 }}>
+                    <Paper sx={{ p: 4, height: '100%', border: '1px solid #e0e0e0', borderRadius: 3 }}>
                         <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>Room Distribution</Typography>
                         <Stack spacing={3}>
                             {[
@@ -118,9 +149,14 @@ const AdminDashboard = () => {
                             ))}
                         </Stack>
                         <Divider sx={{ my: 4 }} />
-                        <Typography variant="caption" color="text.secondary">
-                            Live system status: All services operational.
-                        </Typography>
+                        <Box sx={{ p: 2, bgcolor: 'primary.light', borderRadius: 2, border: '1px solid', borderColor: 'primary.main' }}>
+                            <Typography variant="caption" sx={{ color: 'primary.main', fontWeight: 800, display: 'block', mb: 0.5 }}>
+                                OPERATIONAL TIP
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                                High occupancy expected for the upcoming weekend. Suggest optimized pricing for Suites.
+                            </Typography>
+                        </Box>
                     </Paper>
                 </Grid>
             </Grid>

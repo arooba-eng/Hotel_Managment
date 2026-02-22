@@ -1,14 +1,29 @@
-import { Box, Typography, Button, Container, Grid, Card, CardMedia, CardContent, Chip, Stack } from '@mui/material';
+import { Box, Typography, Button, Container, Grid, Card, CardMedia, CardContent, Chip, Stack, CircularProgress } from '@mui/material';
 import { motion } from 'framer-motion';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import StarsIcon from '@mui/icons-material/Stars';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { getRooms } from '../api';
 
 const Home = () => {
-    const featuredRooms = [
-        { title: 'Deluxe Garden Suite', price: '250', image: 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&q=80&w=800', tag: 'Eco-Friendly' },
-        { title: 'Presidential Ocean View', price: '550', image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&q=80&w=800', tag: 'Premium' },
-        { title: 'Forest Retreat Lodge', price: '180', image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=800', tag: 'Peaceful' },
-    ];
+    const [featuredRooms, setFeaturedRooms] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const fetchRooms = async () => {
+            try {
+                const { data } = await getRooms();
+                setFeaturedRooms(data.slice(0, 3)); // Just show first 3 for featured
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchRooms();
+    }, []);
 
     return (
         <Box>
@@ -69,6 +84,7 @@ const Home = () => {
                                 size="large"
                                 endIcon={<ArrowForwardIcon />}
                                 sx={{ bgcolor: 'secondary.main', px: 4, py: 2 }}
+                                onClick={() => navigate('/rooms')}
                             >
                                 Explore Rooms
                             </Button>
@@ -76,6 +92,7 @@ const Home = () => {
                                 variant="outlined"
                                 size="large"
                                 sx={{ borderColor: '#ffffff', color: '#ffffff', px: 4, py: 2 }}
+                                onClick={() => navigate('/about')}
                             >
                                 Our Story
                             </Button>
@@ -93,36 +110,47 @@ const Home = () => {
                         </Typography>
                         <Typography variant="h2" sx={{ mt: 1 }}>Featured Accommodations</Typography>
                     </Box>
-                    <Button color="primary" sx={{ fontWeight: 700 }}>View All Rooms</Button>
+                    <Button color="primary" sx={{ fontWeight: 700 }} onClick={() => navigate('/rooms')}>View All Rooms</Button>
                 </Stack>
 
-                <Grid container spacing={4}>
-                    {featuredRooms.map((room, index) => (
-                        <Grid item xs={12} sm={6} md={4} key={index}>
-                            <motion.div
-                                whileHover={{ y: -10 }}
-                                transition={{ duration: 0.3 }}
-                            >
-                                <Card sx={{ borderRadius: 4, overflow: 'hidden' }}>
-                                    <CardMedia
-                                        component="img"
-                                        height="300"
-                                        image={room.image}
-                                        alt={room.title}
-                                    />
-                                    <CardContent sx={{ p: 3 }}>
-                                        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
-                                            <Chip label={room.tag} size="small" sx={{ bgcolor: 'background.default', color: 'primary.main', fontWeight: 600 }} />
-                                            <Typography variant="h6" color="primary" sx={{ fontWeight: 800 }}>${room.price}<span style={{ fontSize: '0.8rem', opacity: 0.6 }}>/night</span></Typography>
-                                        </Stack>
-                                        <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>{room.title}</Typography>
-                                        <Button fullWidth variant="outlined" sx={{ borderRadius: 2 }}>Book Now</Button>
-                                    </CardContent>
-                                </Card>
-                            </motion.div>
-                        </Grid>
-                    ))}
-                </Grid>
+                {loading ? (
+                    <Box sx={{ display: 'flex', justifyContent: 'center' }}><CircularProgress /></Box>
+                ) : (
+                    <Grid container spacing={4}>
+                        {featuredRooms.map((room) => (
+                            <Grid item xs={12} sm={6} md={4} key={room._id}>
+                                <motion.div
+                                    whileHover={{ y: -10 }}
+                                    transition={{ duration: 0.3 }}
+                                >
+                                    <Card sx={{ borderRadius: 4, overflow: 'hidden', height: '100%', display: 'flex', flexDirection: 'column' }}>
+                                        <CardMedia
+                                            component="img"
+                                            height="300"
+                                            image={room.image || 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&q=80&w=800'}
+                                            alt={room.roomType}
+                                        />
+                                        <CardContent sx={{ p: 3, flexGrow: 1 }}>
+                                            <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
+                                                <Chip label={room.status.toUpperCase()} size="small" sx={{ bgcolor: 'background.default', color: 'primary.main', fontWeight: 600 }} />
+                                                <Typography variant="h6" color="primary" sx={{ fontWeight: 800 }}>${room.pricePerNight}<span style={{ fontSize: '0.8rem', opacity: 0.6 }}>/night</span></Typography>
+                                            </Stack>
+                                            <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>{room.roomType}</Typography>
+                                            <Button
+                                                fullWidth
+                                                variant="outlined"
+                                                sx={{ borderRadius: 2, mt: 'auto' }}
+                                                onClick={() => navigate(`/rooms/${room._id}`)}
+                                            >
+                                                Book Now
+                                            </Button>
+                                        </CardContent>
+                                    </Card>
+                                </motion.div>
+                            </Grid>
+                        ))}
+                    </Grid>
+                )}
             </Container>
 
             {/* Philosophy Section */}

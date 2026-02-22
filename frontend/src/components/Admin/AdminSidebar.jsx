@@ -8,6 +8,8 @@ import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import CleaningServicesIcon from '@mui/icons-material/CleaningServices';
 import EngineeringIcon from '@mui/icons-material/Engineering';
 import PersonSearchIcon from '@mui/icons-material/PersonSearch';
+import RoomServiceIcon from '@mui/icons-material/RoomService';
+import RateReviewIcon from '@mui/icons-material/RateReview';
 import LogoutIcon from '@mui/icons-material/Logout';
 
 const drawerWidth = 240; // Smaller sidebar
@@ -22,8 +24,11 @@ const AdminSidebar = () => {
         { label: 'System Users', icon: <PeopleIcon sx={{ fontSize: 20 }} />, path: '/admin/system-users', roles: ['admin'] },
         { label: 'Room Management', icon: <MeetingRoomIcon sx={{ fontSize: 20 }} />, path: '/admin/rooms', roles: ['admin', 'manager'] },
         { label: 'Reservations', icon: <BookOnlineIcon sx={{ fontSize: 20 }} />, path: '/admin/reservations', roles: ['admin', 'manager', 'receptionist'] },
+        { label: 'Guest Services', icon: <RoomServiceIcon sx={{ fontSize: 20 }} />, path: '/admin/service-requests', roles: ['admin', 'manager', 'receptionist'] },
+        { label: 'Billing', icon: <ReceiptLongIcon sx={{ fontSize: 20 }} />, path: '/admin/billing', roles: ['admin', 'manager', 'receptionist'] },
         { label: 'Housekeeping', icon: <CleaningServicesIcon sx={{ fontSize: 20 }} />, path: '/admin/housekeeping', roles: ['admin', 'manager', 'housekeeping'] },
         { label: 'Maintenance', icon: <EngineeringIcon sx={{ fontSize: 20 }} />, path: '/admin/maintenance', roles: ['admin', 'manager', 'maintenance'] },
+        { label: 'Feedback', icon: <RateReviewIcon sx={{ fontSize: 20 }} />, path: '/admin/feedback', roles: ['admin', 'manager'] },
     ];
 
     const handleLogout = () => {

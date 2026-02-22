@@ -1,5 +1,9 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const Booking = require('../models/Booking');
+const Room = require('../models/Room');
+const MaintenanceRequest = require('../models/MaintenanceRequest');
+const Invoice = require('../models/Invoice');
 
 // @desc    Generate JWT
 const generateToken = (id) => {
@@ -22,6 +26,7 @@ const authUser = async (req, res) => {
             email: user.email,
             role: user.role,
             token: generateToken(user._id),
+            message: 'Login successful'
         });
     } else {
         res.status(401);
@@ -58,6 +63,7 @@ const registerUser = async (req, res) => {
             email: user.email,
             role: user.role,
             token: generateToken(user._id),
+            message: 'Account registered successfully'
         });
     } else {
         res.status(400);
@@ -92,6 +98,7 @@ const createUserByAdmin = async (req, res) => {
             name: user.name,
             email: user.email,
             role: user.role,
+            message: 'User created successfully'
         });
     } else {
         res.status(400);
@@ -194,7 +201,8 @@ const updateStaffUser = async (req, res) => {
             name: updatedUser.name,
             email: updatedUser.email,
             role: updatedUser.role,
-            status: updatedUser.status
+            status: updatedUser.status,
+            message: 'User updated successfully'
         });
     } else {
         res.status(404);
@@ -210,20 +218,35 @@ const getDashboardStats = async (req, res) => {
         const staffCount = await User.countDocuments({ role: { $ne: 'guest' } });
         const guestCount = await User.countDocuments({ role: 'guest' });
 
-        // Mocking room stats until Room model is ready
+        const totalRooms = await Room.countDocuments();
+        const occupiedRooms = await Room.countDocuments({ status: 'occupied' });
+        const occupancy = totalRooms > 0 ? (occupiedRooms / totalRooms) * 100 : 0;
+
+        const pendingMaintenance = await MaintenanceRequest.countDocuments({ status: { $ne: 'completed' } });
+
+        // Calculate actual revenue from paid invoices
+        const paidInvoices = await Invoice.find({ paymentStatus: 'paid' });
+        const revenue = paidInvoices.reduce((acc, curr) => acc + curr.totalAmount, 0);
+
+        const recentBookings = await Booking.find({})
+            .sort({ createdAt: -1 })
+            .limit(5)
+            .populate('guest', 'name email')
+            .populate('room', 'roomNumber');
+
         const stats = {
             totalUsers,
             staffCount,
             guestCount,
-            revenue: 124500, // Placeholder
-            occupancy: 85,    // Placeholder
-            pendingMaintenance: 4 // Placeholder
+            revenue,
+            occupancy: Math.round(occupancy),
+            pendingMaintenance,
+            recentBookings
         };
 
         res.json(stats);
     } catch (error) {
-        res.status(500);
-        throw new Error('Error fetching dashboard stats');
+        res.status(500).json({ message: 'Error fetching dashboard stats' });
     }
 };
 

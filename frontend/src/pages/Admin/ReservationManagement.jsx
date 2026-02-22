@@ -7,7 +7,7 @@ import {
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
-import { getBookings, updateBookingStatus } from '../../api';
+import { getBookings, updateBookingStatus, generateInvoice } from '../../api';
 
 const ReservationManagement = () => {
     const [bookings, setBookings] = useState([]);
@@ -33,6 +33,16 @@ const ReservationManagement = () => {
     const handleStatusUpdate = async (id, status) => {
         try {
             await updateBookingStatus(id, status);
+
+            // Automatically generate invoice on check-out
+            if (status === 'checked-out') {
+                try {
+                    await generateInvoice(id);
+                } catch (invErr) {
+                    console.error("Invoice generation skipped or already exists", invErr);
+                }
+            }
+
             fetchBookings();
         } catch (err) {
             setError('Status update failed');

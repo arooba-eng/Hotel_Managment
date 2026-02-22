@@ -39,7 +39,10 @@ const createRequest = async (req, res) => {
         // Set room status to maintenance
         await Room.findByIdAndUpdate(roomId, { status: 'maintenance' });
 
-        res.status(201).json(request);
+        res.status(201).json({
+            message: 'Maintenance request reported successfully',
+            request
+        });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -74,7 +77,10 @@ const updateRequest = async (req, res) => {
             }
 
             const updatedRequest = await request.save();
-            res.json(updatedRequest);
+            res.json({
+                message: `Maintenance status updated to ${status}`,
+                request: updatedRequest
+            });
         } else {
             res.status(404).json({ message: 'Request not found' });
         }

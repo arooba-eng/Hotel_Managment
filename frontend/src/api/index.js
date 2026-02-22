@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { toast } from 'react-toastify';
 
 const API = axios.create({ baseURL: 'http://localhost:5000/api' });
 
@@ -8,6 +9,26 @@ API.interceptors.request.use((req) => {
     }
     return req;
 });
+
+// Response interceptor for automatic toast notifications
+API.interceptors.response.use(
+    (response) => {
+        const { method } = response.config;
+        const { message } = response.data;
+
+        // Show success toast for mutations (POST, PUT, DELETE)
+        if (['post', 'put', 'delete'].includes(method.toLowerCase())) {
+            toast.success(message || 'Operation successful!');
+        }
+
+        return response;
+    },
+    (error) => {
+        const message = error.response?.data?.message || error.message || 'Something went wrong';
+        toast.error(message);
+        return Promise.reject(error);
+    }
+);
 
 export const login = (formData) => API.post('/users/login', formData);
 export const register = (formData) => API.post('/users', formData);
@@ -43,5 +64,20 @@ export const getMaintenanceRequests = () => API.get('/maintenance');
 export const createMaintenanceRequest = (requestData) => API.post('/maintenance', requestData);
 export const updateMaintenanceStatus = (id, statusData) => API.put(`/maintenance/${id}`, statusData);
 export const deleteMaintenanceRequest = (id) => API.delete(`/maintenance/${id}`);
+
+// Guest Services (Room Service, Laundry, etc.)
+export const getServiceRequests = () => API.get('/services');
+export const createServiceRequest = (serviceData) => API.post('/services', serviceData);
+export const updateServiceStatus = (id, statusData) => API.put(`/services/${id}`, statusData);
+
+// Billing & Invoices
+export const getInvoices = () => API.get('/invoices');
+export const generateInvoice = (bookingId) => API.post('/invoices', { bookingId });
+export const updatePaymentStatus = (id, paymentData) => API.put(`/invoices/${id}/payment`, paymentData);
+
+// Feedback
+export const getAllFeedback = () => API.get('/feedback');
+export const submitFeedback = (feedbackData) => API.post('/feedback', feedbackData);
+export const updateFeedbackVisibility = (id, isPublic) => API.put(`/feedback/${id}/visibility`, { isPublic });
 
 export default API;

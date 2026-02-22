@@ -1,5 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider, CssBaseline } from '@mui/material';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import theme from './theme';
 
 // Layouts
@@ -25,6 +27,9 @@ import RoomManagement from './pages/Admin/RoomManagement';
 import ReservationManagement from './pages/Admin/ReservationManagement';
 import HousekeepingManagement from './pages/Admin/HousekeepingManagement';
 import MaintenanceManagement from './pages/Admin/MaintenanceManagement';
+import BillingManagement from './pages/Admin/BillingManagement';
+import ServiceRequests from './pages/Admin/ServiceRequests';
+import FeedbackManagement from './pages/Admin/FeedbackManagement';
 
 // Auth Guard Component
 const ProtectedRoute = ({ children, roles }) => {
@@ -40,6 +45,18 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="colored"
+      />
       <Router>
         <Routes>
           {/* Public Routes with MainLayout */}
@@ -92,6 +109,24 @@ function App() {
           <Route path="/admin/maintenance" element={
             <ProtectedRoute roles={['admin', 'manager', 'maintenance']}>
               <AdminLayout><MaintenanceManagement /></AdminLayout>
+            </ProtectedRoute>
+          } />
+
+          <Route path="/admin/billing" element={
+            <ProtectedRoute roles={['admin', 'manager', 'receptionist']}>
+              <AdminLayout><BillingManagement /></AdminLayout>
+            </ProtectedRoute>
+          } />
+
+          <Route path="/admin/service-requests" element={
+            <ProtectedRoute roles={['admin', 'manager', 'receptionist']}>
+              <AdminLayout><ServiceRequests /></AdminLayout>
+            </ProtectedRoute>
+          } />
+
+          <Route path="/admin/feedback" element={
+            <ProtectedRoute roles={['admin', 'manager']}>
+              <AdminLayout><FeedbackManagement /></AdminLayout>
             </ProtectedRoute>
           } />
 

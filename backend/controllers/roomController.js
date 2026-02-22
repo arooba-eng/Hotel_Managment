@@ -51,7 +51,10 @@ const createRoom = async (req, res) => {
             images,
         });
 
-        res.status(201).json(room);
+        res.status(201).json({
+            message: `Room ${room.roomNumber} created successfully`,
+            room
+        });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -77,7 +80,10 @@ const updateRoom = async (req, res) => {
             room.status = status || room.status;
 
             const updatedRoom = await room.save();
-            res.json(updatedRoom);
+            res.json({
+                message: `Room ${updatedRoom.roomNumber} updated successfully`,
+                room: updatedRoom
+            });
         } else {
             res.status(404).json({ message: 'Room not found' });
         }

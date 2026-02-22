@@ -1,17 +1,43 @@
-import { Box, Container, Typography, Grid, Card, CardMedia, CardContent, Chip, Button, Stack, TextField, InputAdornment } from '@mui/material';
+import { Box, Container, Typography, Grid, Card, CardMedia, CardContent, Chip, Button, Stack, TextField, InputAdornment, CircularProgress, Alert } from '@mui/material';
 import { motion } from 'framer-motion';
 import SearchIcon from '@mui/icons-material/Search';
 import FilterListIcon from '@mui/icons-material/FilterList';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { getRooms } from '../api';
 
 const Rooms = () => {
-    const allRooms = [
-        { id: 1, title: 'Deluxe Garden Suite', price: '250', image: 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&q=80&w=800', tag: 'Eco-Friendly', desc: 'A spacious suite with direct access to our organic gardens.' },
-        { id: 2, title: 'Presidential Ocean View', price: '550', image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&q=80&w=800', tag: 'Premium', desc: 'Unmatched luxury with panoramic views of the Atlantic Ocean.' },
-        { id: 3, title: 'Forest Retreat Lodge', price: '180', image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=800', tag: 'Peaceful', desc: 'Reconnect with nature in our modern log cabin retreat.' },
-        { id: 4, title: 'Sky Loft Penthouse', price: '700', image: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&q=80&w=800', tag: 'Exclusive', desc: 'Urban elegance with private rooftop terrace and infinity pool.' },
-        { id: 5, title: 'Classic Urban Room', price: '120', image: 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&q=80&w=800', tag: 'Minimal', desc: 'Simple, clean design for the busy professional traveler.' },
-        { id: 6, title: 'Wellness Spa Suite', price: '320', image: 'https://images.unsplash.com/photo-1571508601891-ca5ac7a813c9?auto=format&fit=crop&q=80&w=800', tag: 'Health', desc: 'Features private steam shower and aromatherapy system.' },
-    ];
+    const [rooms, setRooms] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [searchTerm, setSearchTerm] = useState('');
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const fetchRooms = async () => {
+            try {
+                const { data } = await getRooms();
+                // Filter to show only available or occupied rooms (not maintenance/cleaning for guests)
+                setRooms(data.filter(room => ['available', 'occupied'].includes(room.status)));
+            } catch (err) {
+                setError('Failed to fetch rooms. Please try again later.');
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchRooms();
+    }, []);
+
+    const filteredRooms = rooms.filter(room =>
+        room.roomType.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        room.roomNumber.toString().includes(searchTerm)
+    );
+
+    if (loading) return (
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+            <CircularProgress color="primary" />
+        </Box>
+    );
 
     return (
         <Box sx={{ py: 10 }}>
@@ -26,11 +52,15 @@ const Rooms = () => {
                     </Typography>
                 </Box>
 
+                {error && <Alert severity="error" sx={{ mb: 4, borderRadius: 3 }}>{error}</Alert>}
+
                 {/* Filters */}
                 <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ mb: 6 }}>
                     <TextField
                         fullWidth
-                        placeholder="Search rooms..."
+                        placeholder="Search by room type (e.g. Deluxe, Suite)..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
                         InputProps={{
                             startAdornment: (
                                 <InputAdornment position="start">
@@ -50,47 +80,60 @@ const Rooms = () => {
                 </Stack>
 
                 <Grid container spacing={4}>
-                    {allRooms.map((room) => (
-                        <Grid item xs={12} sm={6} md={4} key={room.id}>
+                    {filteredRooms.map((room) => (
+                        <Grid item xs={12} sm={6} md={4} key={room._id}>
                             <motion.div
                                 whileHover={{ y: -8 }}
                                 transition={{ duration: 0.3 }}
                             >
-                                <Card sx={{ borderRadius: 5, border: '1px solid rgba(0,0,0,0.05)' }}>
+                                <Card sx={{ borderRadius: 5, border: '1px solid rgba(0,0,0,0.05)', height: '100%', display: 'flex', flexDirection: 'column' }}>
                                     <Box sx={{ position: 'relative' }}>
                                         <CardMedia
                                             component="img"
                                             height="260"
-                                            image={room.image}
-                                            alt={room.title}
+                                            image={room.image || 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&q=80&w=800'}
+                                            alt={room.roomType}
                                         />
                                         <Chip
-                                            label={room.tag}
+                                            label={room.status.toUpperCase()}
                                             size="small"
+                                            color={room.status === 'available' ? 'success' : 'warning'}
                                             sx={{
                                                 position: 'absolute',
                                                 top: 16,
                                                 left: 16,
-                                                bgcolor: 'rgba(255,255,255,0.9)',
-                                                backdropFilter: 'blur(4px)',
-                                                color: 'primary.main',
                                                 fontWeight: 700
                                             }}
                                         />
                                     </Box>
-                                    <CardContent sx={{ p: 3 }}>
+                                    <CardContent sx={{ p: 3, flexGrow: 1 }}>
                                         <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
-                                            <Typography variant="h5" sx={{ fontWeight: 800 }}>{room.title}</Typography>
+                                            <Typography variant="h5" sx={{ fontWeight: 800 }}>{room.roomType}</Typography>
                                             <Typography variant="h6" color="primary" sx={{ fontWeight: 800 }}>
-                                                ${room.price}
+                                                ${room.pricePerNight}
                                             </Typography>
                                         </Stack>
-                                        <Typography variant="body2" color="text.secondary" sx={{ mb: 3, height: 40, overflow: 'hidden' }}>
-                                            {room.desc}
+                                        <Typography variant="body2" color="text.secondary" sx={{ mb: 3, height: 60, overflow: 'hidden' }}>
+                                            Luxury {room.roomType} located on the {room.floor} floor. Experience high-end comfort in Room {room.roomNumber}.
                                         </Typography>
-                                        <Stack direction="row" spacing={1}>
-                                            <Button fullWidth variant="contained" sx={{ borderRadius: 2 }}>Details</Button>
-                                            <Button fullWidth variant="outlined" sx={{ borderRadius: 2 }}>Book</Button>
+                                        <Stack direction="row" spacing={1} sx={{ mt: 'auto' }}>
+                                            <Button
+                                                fullWidth
+                                                variant="contained"
+                                                sx={{ borderRadius: 2 }}
+                                                onClick={() => navigate(`/rooms/${room._id}`)}
+                                            >
+                                                Details
+                                            </Button>
+                                            <Button
+                                                fullWidth
+                                                variant="outlined"
+                                                sx={{ borderRadius: 2 }}
+                                                onClick={() => navigate(`/rooms/${room._id}`)}
+                                                disabled={room.status !== 'available'}
+                                            >
+                                                {room.status === 'available' ? 'Book Now' : 'Occupied'}
+                                            </Button>
                                         </Stack>
                                     </CardContent>
                                 </Card>
@@ -98,6 +141,11 @@ const Rooms = () => {
                         </Grid>
                     ))}
                 </Grid>
+                {filteredRooms.length === 0 && !loading && (
+                    <Box sx={{ textAlign: 'center', py: 10 }}>
+                        <Typography variant="h6" color="text.secondary">No rooms found matching your search.</Typography>
+                    </Box>
+                )}
             </Container>
         </Box>
     );

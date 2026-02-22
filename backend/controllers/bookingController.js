@@ -29,7 +29,10 @@ const createBooking = async (req, res) => {
         // Update room status to occupied if needed immediately, or handle via check-in
         // For now, let's keep room status change for check-in process
 
-        res.status(201).json(booking);
+        res.status(201).json({
+            message: 'Booking created successfully',
+            booking
+        });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -107,7 +110,10 @@ const updateBookingStatus = async (req, res) => {
             }
 
             const updatedBooking = await booking.save();
-            res.json(updatedBooking);
+            res.json({
+                message: `Booking status updated to ${status}`,
+                booking: updatedBooking
+            });
         } else {
             res.status(404).json({ message: 'Booking not found' });
         }
